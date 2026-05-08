@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Nebula Raiders | Asteroids Moderno</title>
+
+  <link rel="stylesheet" href="css/estilobackground.css" />
+  <link rel="stylesheet" href="css/estilogeral.css" />
+</head>
+
+<body>
+  <div class="space-background">
+    <div class="nebula nebula-one"></div>
+    <div class="nebula nebula-two"></div>
+    <div class="scanline"></div>
+  </div>
+
+  <main class="game-shell">
+    <section class="top-panel">
+      <div class="brand-area">
+        <p class="eyebrow">Projeto Game</p>
+        <h1>NEBULA RAIDERS</h1>
+        <p class="subtitle">Fragmentos de Órion</p>
+      </div>
+
+      <div class="hud">
+        <div class="hud-card">
+          <span>Pontos</span>
+          <strong id="scoreValue">00000</strong>
+        </div>
+
+        <div class="hud-card">
+          <span>Setor</span>
+          <strong id="waveValue">1</strong>
+        </div>
+
+        <div class="hud-card">
+          <span>Nível da Nave</span>
+          <strong id="levelValue">1</strong>
+        </div>
+
+        <div class="hud-card wide">
+          <span>Casco</span>
+          <div class="bar">
+            <i id="hullBar"></i>
+          </div>
+        </div>
+
+        <div class="hud-card wide">
+          <span>XP</span>
+          <div class="bar xp">
+            <i id="xpBar"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mission-panel">
+      <span class="status-dot"></span>
+      <p id="missionText">Aguardando piloto para iniciar a missão.</p>
+    </section>
+
+    <section class="canvas-card">
+      <canvas id="gameCanvas"></canvas>
+
+      <div id="startScreen" class="screen-overlay">
+        <div class="screen-box">
+          <p class="eyebrow">Ano 2189</p>
+          <h2>Os fragmentos de Órion acordaram</h2>
+
+          <p>
+            Depois da queda de uma antiga estação espacial, milhares de rochas
+            energizadas começaram a cruzar as rotas humanas. Você é o piloto da
+            última nave de patrulha da Nebula Corps.
+          </p>
+
+          <p>
+            Sobreviva aos setores, destrua asteroides, colete experiência e
+            evolua sua nave para atravessar regiões cada vez mais perigosas.
+          </p>
+
+          <button id="startBtn" class="primary-btn">Iniciar missão</button>
+
+          <div class="controls-hint">
+            <span>W / ↑ acelerar</span>
+            <span>A / D girar</span>
+            <span>Espaço atirar</span>
+            <span>S / ↓ frear</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="upgradeScreen" class="screen-overlay hidden">
+        <div class="screen-box upgrade-box">
+          <p class="eyebrow">Upgrade disponível</p>
+          <h2>Nave evoluiu</h2>
+          <p>Escolha uma melhoria para continuar sua jornada.</p>
+
+          <div id="upgradeCards" class="upgrade-grid"></div>
+        </div>
+      </div>
+
+      <div id="gameOverScreen" class="screen-overlay hidden">
+        <div class="screen-box">
+          <p class="eyebrow danger">Sinal perdido</p>
+          <h2>Missão encerrada</h2>
+
+          <p>
+            Sua nave foi destruída nos campos de fragmentos. Mas cada tentativa
+            ajuda a Nebula Corps a mapear melhor o setor.
+          </p>
+
+          <div class="result-box">
+            <span>Pontuação final</span>
+            <strong id="finalScore">0</strong>
+          </div>
+
+          <div class="result-box">
+            <span>Recorde local</span>
+            <strong id="highScore">0</strong>
+          </div>
+
+          <button id="restartBtn" class="primary-btn">Tentar novamente</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bottom-panel">
+      <p>
+        Objetivo da primeira versão: sobreviver, ganhar XP, evoluir a nave e
+        avançar por setores.
+      </p>
+    </footer>
+  </main>
+
+  <script src="js/config.js" defer></script>
+  <script src="js/utils.js" defer></script>
+  <script src="js/background.js" defer></script>
+  <script src="js/entities.js" defer></script>
+  <script src="js/game.js" defer></script>
+</body>
+</html>
