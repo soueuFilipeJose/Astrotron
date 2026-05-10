@@ -138,61 +138,95 @@ class Player {
     }
   }
 
-  draw(ctx, keys) {
-    const accelerating = keys.KeyW || keys.ArrowUp;
-    const flicker = this.invulnerable > 0 && Math.floor(this.invulnerable * 14) % 2 === 0;
+ draw(ctx, keys) {
+  const accelerating = keys.KeyW || keys.ArrowUp;
+  const flicker = this.invulnerable > 0 && Math.floor(this.invulnerable * 14) % 2 === 0;
 
-    if (flicker) {
-      ctx.globalAlpha = 0.42;
-    }
-
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.angle);
-
-    if (accelerating) {
-      ctx.beginPath();
-      ctx.moveTo(-this.radius * 0.85, 0);
-      ctx.lineTo(-this.radius * 1.75, -this.radius * 0.35);
-      ctx.lineTo(-this.radius * 1.35, 0);
-      ctx.lineTo(-this.radius * 1.75, this.radius * 0.35);
-      ctx.closePath();
-
-      ctx.fillStyle = "rgba(255, 184, 107, 0.85)";
-      ctx.shadowBlur = 18;
-      ctx.shadowColor = "#ffb86b";
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(this.radius * 1.25, 0);
-    ctx.lineTo(-this.radius * 0.85, -this.radius * 0.72);
-    ctx.lineTo(-this.radius * 0.48, 0);
-    ctx.lineTo(-this.radius * 0.85, this.radius * 0.72);
-    ctx.closePath();
-
-    const bodyGradient = ctx.createLinearGradient(-this.radius, 0, this.radius, 0);
-    bodyGradient.addColorStop(0, "#9d6bff");
-    bodyGradient.addColorStop(1, "#57e8ff");
-
-    ctx.fillStyle = bodyGradient;
-    ctx.shadowBlur = 18;
-    ctx.shadowColor = "#57e8ff";
-    ctx.fill();
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(this.radius * 0.18, 0, this.radius * 0.24, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(5, 9, 22, 0.9)";
-    ctx.fill();
-
-    ctx.restore();
-    ctx.globalAlpha = 1;
+  if (flicker) {
+    ctx.globalAlpha = 0.45;
   }
+
+  ctx.save();
+  ctx.translate(this.x, this.y);
+
+  /*
+    A imagem da nave está apontada para cima.
+    O sistema de movimento do jogo usa o ângulo apontando para a direita.
+    Por isso usamos + Math.PI / 2 para alinhar o sprite com o movimento.
+  */
+  ctx.rotate(this.angle + Math.PI / 2);
+
+  if (accelerating) {
+    this.drawEngineFlame(ctx);
+  }
+
+  if (this.spriteLoaded) {
+    const spriteWidth = this.radius * 5.2;
+    const spriteHeight = spriteWidth * (this.sprite.height / this.sprite.width);
+
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = "rgba(102, 217, 255, 0.45)";
+
+    ctx.drawImage(
+      this.sprite,
+      -spriteWidth / 2,
+      -spriteHeight / 2,
+      spriteWidth,
+      spriteHeight
+    );
+
+    ctx.shadowBlur = 0;
+  } else {
+    this.drawFallbackShip(ctx);
+  }
+
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+drawEngineFlame(ctx) {
+  const flameLength = this.radius * Utils.randomRange(1.2, 1.8);
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.moveTo(-this.radius * 0.42, this.radius * 1.8);
+  ctx.lineTo(0, this.radius * 1.8 + flameLength);
+  ctx.lineTo(this.radius * 0.42, this.radius * 1.8);
+  ctx.closePath();
+
+  const flameGradient = ctx.createLinearGradient(
+    0,
+    this.radius * 1.4,
+    0,
+    this.radius * 3.2
+  );
+
+  flameGradient.addColorStop(0, "rgba(102, 217, 255, 0.95)");
+  flameGradient.addColorStop(0.45, "rgba(255, 184, 107, 0.75)");
+  flameGradient.addColorStop(1, "rgba(255, 75, 95, 0)");
+
+  ctx.fillStyle = flameGradient;
+  ctx.shadowBlur = 24;
+  ctx.shadowColor = "rgba(102, 217, 255, 0.9)";
+  ctx.fill();
+
+  ctx.restore();
+}
+
+drawFallbackShip(ctx) {
+  ctx.beginPath();
+  ctx.moveTo(0, -this.radius * 1.4);
+  ctx.lineTo(this.radius * 1.1, this.radius * 1.1);
+  ctx.lineTo(0, this.radius * 0.65);
+  ctx.lineTo(-this.radius * 1.1, this.radius * 1.1);
+  ctx.closePath();
+
+  ctx.fillStyle = "#66d9ff";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+  ctx.lineWidth = 2;
+  ctx.fill();
+  ctx.stroke();
 }
 
 class Bullet {
