@@ -1,15 +1,15 @@
 const GAME_CONFIG = Object.freeze({
-  player: {
-    radius: 17,
-    maxHull: 100,
-    thrust: 340,
-    maxSpeed: 440,
-    rotationSpeed: 4.8,
-    friction: 0.992,
-    fireRate: 0.22,
-    bulletSpeed: 680,
-    bulletDamage: 1,
-    invulnerabilityTime: 1.4
+ player: {
+  radius: 16,
+  maxHull: 100,
+  thrust: 340,
+  maxSpeed: 440,
+  rotationSpeed: 4.8,
+  friction: 0.992,
+  fireRate: 0.22,
+  bulletSpeed: 680,
+  bulletDamage: 1,
+  invulnerabilityTime: 1.4
   },
 
   bullet: {
