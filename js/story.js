@@ -68,17 +68,14 @@ const STORY = Object.freeze({
 const STATIONS = Object.freeze([
   {
     name: "Posto Velha Íris",
-    description:
-      "Uma estação torta presa a uma lua rachada. O cheiro de óleo queimado atravessa até o filtro do capacete."
+    description: "Uma estação torta presa a uma lua rachada. O cheiro de óleo queimado atravessa até o filtro do capacete."
   },
   {
     name: "Ancoragem Santo Vácuo",
-    description:
-      "Um porto clandestino iluminado por letreiros quebrados, onde pilotos trocam peças, dívidas e segredos."
+    description: "Um porto clandestino iluminado por letreiros quebrados, onde pilotos trocam peças, dívidas e segredos."
   },
   {
     name: "Refúgio Nove-Dentes",
-    description:
-      "Um depósito militar abandonado. Ainda há marcas de batalha nas paredes e vozes antigas no rádio."
+    description: "Um depósito militar abandonado. Ainda há marcas de batalha nas paredes e vozes antigas no rádio."
   }
 ]);
