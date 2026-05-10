@@ -38,7 +38,7 @@ class Player {
     this.spriteLoaded = false;
 
     this.sprite.addEventListener("load", () => {
-    this.spriteLoaded = true;
+      this.spriteLoaded = true;
 });
   }
 
