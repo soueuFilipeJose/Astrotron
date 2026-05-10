@@ -2,79 +2,116 @@ class StarField {
   constructor() {
     this.width = 0;
     this.height = 0;
-    this.layers = [];
-    this.nebulaTime = 0;
+
+    this.image = new Image();
+    this.image.src = "assets/img/fase1-background.png";
+    this.imageLoaded = false;
+
+    this.image.addEventListener("load", () => {
+      this.imageLoaded = true;
+    });
+
+    this.parallaxOffset = 0;
+    this.dustParticles = [];
   }
 
   resize(width, height) {
     this.width = width;
     this.height = height;
 
-    this.layers = [
-      this.createLayer(70, 0.28, 0.9),
-      this.createLayer(45, 0.55, 1.5),
-      this.createLayer(25, 0.9, 2.2)
-    ];
-  }
+    this.dustParticles = [];
 
-  createLayer(amount, speed, size) {
-    const stars = [];
-
-    for (let i = 0; i < amount; i++) {
-      stars.push({
+    for (let i = 0; i < 55; i++) {
+      this.dustParticles.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
-        speed,
-        size: Utils.randomRange(size * 0.6, size * 1.4),
-        alpha: Utils.randomRange(0.35, 0.95)
+        size: Utils.randomRange(1, 3),
+        speed: Utils.randomRange(8, 22),
+        alpha: Utils.randomRange(0.15, 0.55)
       });
     }
-
-    return stars;
   }
 
   update(deltaTime) {
-    this.nebulaTime += deltaTime;
+    this.parallaxOffset += deltaTime * 8;
 
-    for (const layer of this.layers) {
-      for (const star of layer) {
-        star.y += star.speed * 22 * deltaTime;
+    for (const particle of this.dustParticles) {
+      particle.y += particle.speed * deltaTime;
 
-        if (star.y > this.height + 10) {
-          star.y = -10;
-          star.x = Math.random() * this.width;
-        }
+      if (particle.y > this.height + 20) {
+        particle.y = -20;
+        particle.x = Math.random() * this.width;
       }
     }
   }
 
   draw(ctx) {
-    const glowX = this.width * (0.5 + Math.sin(this.nebulaTime * 0.25) * 0.18);
-    const glowY = this.height * (0.5 + Math.cos(this.nebulaTime * 0.2) * 0.14);
+    if (this.imageLoaded) {
+      this.drawCoverImage(ctx, this.image, 0, 0, this.width, this.height);
+    } else {
+      ctx.fillStyle = "#020308";
+      ctx.fillRect(0, 0, this.width, this.height);
+    }
 
+    this.drawDepthOverlay(ctx);
+    this.drawSpaceDust(ctx);
+  }
+
+  drawCoverImage(ctx, image, x, y, width, height) {
+    const imageRatio = image.width / image.height;
+    const canvasRatio = width / height;
+
+    let drawWidth = width;
+    let drawHeight = height;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    if (imageRatio > canvasRatio) {
+      drawHeight = height;
+      drawWidth = height * imageRatio;
+      offsetX = (width - drawWidth) / 2;
+    } else {
+      drawWidth = width;
+      drawHeight = width / imageRatio;
+      offsetY = (height - drawHeight) / 2;
+    }
+
+    ctx.drawImage(
+      image,
+      x + offsetX,
+      y + offsetY,
+      drawWidth,
+      drawHeight
+    );
+  }
+
+  drawSpaceDust(ctx) {
+    for (const particle of this.dustParticles) {
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(210, 230, 255, ${particle.alpha})`;
+      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  drawDepthOverlay(ctx) {
     const gradient = ctx.createRadialGradient(
-      glowX,
-      glowY,
-      40,
-      glowX,
-      glowY,
-      Math.max(this.width, this.height) * 0.65
+      this.width / 2,
+      this.height / 2,
+      this.width * 0.1,
+      this.width / 2,
+      this.height / 2,
+      this.width * 0.8
     );
 
-    gradient.addColorStop(0, "rgba(87, 232, 255, 0.12)");
-    gradient.addColorStop(0.45, "rgba(157, 107, 255, 0.05)");
-    gradient.addColorStop(1, "rgba(3, 5, 13, 1)");
+    gradient.addColorStop(0, "rgba(0, 0, 0, 0.05)");
+    gradient.addColorStop(0.65, "rgba(0, 0, 0, 0.18)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0.72)");
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, this.width, this.height);
 
-    for (const layer of this.layers) {
-      for (const star of layer) {
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+    ctx.fillStyle = "rgba(2, 4, 9, 0.22)";
+    ctx.fillRect(0, 0, this.width, this.height);
   }
 }
