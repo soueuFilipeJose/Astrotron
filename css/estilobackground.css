@@ -1,90 +1,104 @@
-.space-background {
+.astro-background {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 10%, rgba(87, 232, 255, 0.18), transparent 28%),
-    radial-gradient(circle at 80% 20%, rgba(255, 79, 163, 0.14), transparent 30%),
-    radial-gradient(circle at 50% 90%, rgba(157, 107, 255, 0.18), transparent 34%),
-    #050711;
+    radial-gradient(circle at 20% 20%, rgba(102, 217, 255, 0.12), transparent 25%),
+    radial-gradient(circle at 80% 12%, rgba(255, 75, 95, 0.1), transparent 26%),
+    radial-gradient(circle at 52% 82%, rgba(140, 109, 255, 0.13), transparent 30%),
+    #030407;
 }
 
-.space-background::before,
-.space-background::after {
+.astro-background::before,
+.astro-background::after {
   content: "";
   position: absolute;
   inset: -20%;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.9) 1px, transparent 1px),
-    radial-gradient(circle, rgba(87, 232, 255, 0.7) 1px, transparent 1px);
-  background-size: 90px 90px, 160px 160px;
-  background-position: 0 0, 40px 60px;
-  animation: driftStars 42s linear infinite;
-  opacity: 0.42;
+    radial-gradient(circle, rgba(255, 255, 255, 0.72) 1px, transparent 1px),
+    radial-gradient(circle, rgba(102, 217, 255, 0.42) 1px, transparent 1px);
+  background-size: 120px 120px, 220px 220px;
+  background-position: 0 0, 50px 70px;
+  opacity: 0.28;
+  animation: starDrift 70s linear infinite;
 }
 
-.space-background::after {
+.astro-background::after {
+  opacity: 0.18;
   filter: blur(1px);
-  opacity: 0.22;
-  animation-duration: 72s;
+  animation-duration: 120s;
   animation-direction: reverse;
 }
 
-.nebula {
+.mega-structure {
   position: absolute;
-  width: 520px;
-  height: 520px;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.3;
-  animation: pulseNebula 9s ease-in-out infinite alternate;
+  width: 620px;
+  height: 620px;
+  opacity: 0.24;
+  border: 1px solid rgba(185, 230, 255, 0.15);
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 42px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 54px),
+    linear-gradient(135deg, rgba(102, 217, 255, 0.08), transparent);
+  box-shadow:
+    inset 0 0 80px rgba(102, 217, 255, 0.08),
+    0 0 80px rgba(0, 0, 0, 0.6);
 }
 
-.nebula-one {
-  left: -120px;
-  top: 18%;
-  background: #57e8ff;
+.structure-one {
+  right: -220px;
+  top: -180px;
+  transform: rotate(18deg);
 }
 
-.nebula-two {
-  right: -140px;
-  bottom: 12%;
-  background: #ff4fa3;
-  animation-delay: -3s;
+.structure-two {
+  left: -260px;
+  bottom: -240px;
+  transform: rotate(-12deg);
 }
 
-.scanline {
+.dust-layer {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(circle at 40% 55%, rgba(255, 255, 255, 0.07), transparent 2%),
+    radial-gradient(circle at 64% 38%, rgba(255, 75, 95, 0.08), transparent 3%),
+    radial-gradient(circle at 18% 72%, rgba(102, 217, 255, 0.08), transparent 2%);
+  filter: blur(26px);
+  animation: dustMove 18s ease-in-out infinite alternate;
+}
+
+.noise-layer {
   position: absolute;
   inset: 0;
-  opacity: 0.11;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 6px,
-    rgba(255, 255, 255, 0.12) 7px
-  );
+  opacity: 0.12;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 5px,
+      rgba(255, 255, 255, 0.08) 6px
+    );
   pointer-events: none;
 }
 
-@keyframes driftStars {
+@keyframes starDrift {
   from {
     transform: translate3d(0, 0, 0) rotate(0deg);
   }
 
   to {
-    transform: translate3d(-140px, 100px, 0) rotate(8deg);
+    transform: translate3d(-160px, 120px, 0) rotate(8deg);
   }
 }
 
-@keyframes pulseNebula {
+@keyframes dustMove {
   from {
-    transform: scale(0.9);
-    opacity: 0.22;
+    transform: translateX(-30px) scale(1);
   }
 
   to {
-    transform: scale(1.18);
-    opacity: 0.38;
+    transform: translateX(30px) scale(1.08);
   }
 }
