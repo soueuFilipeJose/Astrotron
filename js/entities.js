@@ -228,6 +228,7 @@ drawFallbackShip(ctx) {
   ctx.fill();
   ctx.stroke();
 }
+}
 
 class Bullet {
   constructor(x, y, angle, speed, damage) {
