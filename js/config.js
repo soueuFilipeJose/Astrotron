@@ -24,18 +24,23 @@ const GAME_CONFIG = Object.freeze({
     minSplitRadius: 22
   },
 
+  economy: {
+    repairCost: 120,
+    stationInterval: 2
+  },
+
   progression: {
     firstXpGoal: 120,
     xpGrowth: 1.28
   },
 
   colors: {
-    player: "#57e8ff",
-    playerSecondary: "#9d6bff",
-    bullet: "#ffeb8a",
-    asteroid: "#d9e3ff",
-    danger: "#ff5577",
-    success: "#6effb5",
+    player: "#66d9ff",
+    playerSecondary: "#8c6dff",
+    bullet: "#ffdf7e",
+    asteroid: "#c9d7e8",
+    danger: "#ff4b5f",
+    success: "#7dffb2",
     particle: "#ffffff"
   }
 });
@@ -43,20 +48,20 @@ const GAME_CONFIG = Object.freeze({
 const UPGRADE_OPTIONS = Object.freeze([
   {
     type: "shield",
-    icon: "🛡️",
-    name: "Casco Reforçado",
-    description: "Aumenta a vida máxima da nave e recupera parte do casco."
+    icon: "✚",
+    name: "Placas de Casco Vivo",
+    description: "Aumenta a vida máxima e regenera parte do casco da ASTROTRON."
   },
   {
     type: "cannon",
     icon: "⚡",
-    name: "Canhão de Plasma",
-    description: "Diminui o intervalo entre tiros e aumenta o dano dos disparos."
+    name: "Canhão de Arco",
+    description: "Reduz o tempo entre disparos e aumenta o dano dos tiros."
   },
   {
     type: "engine",
-    icon: "🚀",
-    name: "Motor Íon",
-    description: "Aumenta aceleração, velocidade máxima e controle da nave."
+    icon: "➤",
+    name: "Motor de Vácuo",
+    description: "Aumenta aceleração, velocidade máxima e resposta da nave."
   }
 ]);
