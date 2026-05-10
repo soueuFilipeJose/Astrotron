@@ -1,23 +1,43 @@
-class NebulaRaidersGame {
+class AstrotronGame {
   constructor() {
     this.canvas = document.getElementById("gameCanvas");
     this.ctx = this.canvas.getContext("2d");
 
     this.elements = {
       startScreen: document.getElementById("startScreen"),
+      cutsceneScreen: document.getElementById("cutsceneScreen"),
+      stationScreen: document.getElementById("stationScreen"),
       upgradeScreen: document.getElementById("upgradeScreen"),
       gameOverScreen: document.getElementById("gameOverScreen"),
+
       startBtn: document.getElementById("startBtn"),
       restartBtn: document.getElementById("restartBtn"),
+      skipCutsceneBtn: document.getElementById("skipCutsceneBtn"),
+      nextDialogueBtn: document.getElementById("nextDialogueBtn"),
+
+      repairBtn: document.getElementById("repairBtn"),
+      stationUpgradeBtn: document.getElementById("stationUpgradeBtn"),
+      continueMissionBtn: document.getElementById("continueMissionBtn"),
+
       upgradeCards: document.getElementById("upgradeCards"),
+
       scoreValue: document.getElementById("scoreValue"),
       waveValue: document.getElementById("waveValue"),
       levelValue: document.getElementById("levelValue"),
       hullBar: document.getElementById("hullBar"),
       xpBar: document.getElementById("xpBar"),
       missionText: document.getElementById("missionText"),
+
       finalScore: document.getElementById("finalScore"),
-      highScore: document.getElementById("highScore")
+      highScore: document.getElementById("highScore"),
+
+      cutsceneChapter: document.getElementById("cutsceneChapter"),
+      cutscenePlace: document.getElementById("cutscenePlace"),
+      speakerName: document.getElementById("speakerName"),
+      dialogueText: document.getElementById("dialogueText"),
+
+      stationName: document.getElementById("stationName"),
+      stationDescription: document.getElementById("stationDescription")
     };
 
     this.width = 0;
@@ -41,6 +61,12 @@ class NebulaRaidersGame {
 
     this.time = 0;
     this.lastFrame = 0;
+
+    this.currentCutscene = null;
+    this.currentDialogueIndex = 0;
+    this.cutsceneCallback = null;
+    this.dialogueTimer = 0;
+    this.dialogueAutoDelay = 4.2;
 
     this.bindEvents();
     this.resize();
@@ -76,6 +102,10 @@ class NebulaRaidersGame {
         this.startGame();
       }
 
+      if (event.code === "Enter" && this.state === "cutscene") {
+        this.nextDialogue();
+      }
+
       if (event.code === "KeyR" && this.state === "gameover") {
         this.startGame();
       }
@@ -87,6 +117,13 @@ class NebulaRaidersGame {
 
     this.elements.startBtn.addEventListener("click", () => this.startGame());
     this.elements.restartBtn.addEventListener("click", () => this.startGame());
+
+    this.elements.nextDialogueBtn.addEventListener("click", () => this.nextDialogue());
+    this.elements.skipCutsceneBtn.addEventListener("click", () => this.finishCutscene());
+
+    this.elements.repairBtn.addEventListener("click", () => this.repairShip());
+    this.elements.stationUpgradeBtn.addEventListener("click", () => this.openUpgradeScreen("station"));
+    this.elements.continueMissionBtn.addEventListener("click", () => this.leaveStation());
   }
 
   resize() {
@@ -110,7 +147,7 @@ class NebulaRaidersGame {
   }
 
   startGame() {
-    this.state = "playing";
+    this.state = "cutscene";
 
     this.score = 0;
     this.wave = 0;
@@ -123,25 +160,104 @@ class NebulaRaidersGame {
     this.asteroids = [];
     this.particles = [];
 
+    this.hideAllScreens();
     this.elements.startScreen.classList.add("hidden");
+
+    this.setMission("Transmissão de Nyx Varela sendo restaurada...");
+
+    this.playCutscene(STORY.intro, () => {
+      this.state = "playing";
+      this.startNextWave();
+    });
+
+    this.updateUI();
+  }
+
+  hideAllScreens() {
+    this.elements.cutsceneScreen.classList.add("hidden");
+    this.elements.stationScreen.classList.add("hidden");
     this.elements.upgradeScreen.classList.add("hidden");
     this.elements.gameOverScreen.classList.add("hidden");
+  }
 
-    this.setMission("Sinal confirmado. Avance pelo primeiro campo de fragmentos.");
-    this.startNextWave();
-    this.updateUI();
+  playCutscene(cutscene, callback) {
+    this.state = "cutscene";
+    this.currentCutscene = cutscene;
+    this.currentDialogueIndex = 0;
+    this.cutsceneCallback = callback;
+    this.dialogueTimer = 0;
+
+    this.elements.cutsceneChapter.textContent = cutscene.chapter;
+    this.elements.cutscenePlace.textContent = cutscene.place;
+
+    this.hideAllScreens();
+    this.elements.cutsceneScreen.classList.remove("hidden");
+
+    this.showDialogueLine();
+  }
+
+  showDialogueLine() {
+    const line = this.currentCutscene.lines[this.currentDialogueIndex];
+
+    this.elements.speakerName.textContent = line.speaker;
+    this.elements.dialogueText.textContent = line.text;
+
+    this.dialogueTimer = 0;
+  }
+
+  nextDialogue() {
+    if (this.state !== "cutscene") return;
+
+    this.currentDialogueIndex += 1;
+
+    if (this.currentDialogueIndex >= this.currentCutscene.lines.length) {
+      this.finishCutscene();
+      return;
+    }
+
+    this.showDialogueLine();
+  }
+
+  finishCutscene() {
+    this.elements.cutsceneScreen.classList.add("hidden");
+
+    const callback = this.cutsceneCallback;
+
+    this.currentCutscene = null;
+    this.currentDialogueIndex = 0;
+    this.cutsceneCallback = null;
+    this.dialogueTimer = 0;
+
+    if (callback) {
+      callback();
+    }
   }
 
   startNextWave() {
     this.wave += 1;
 
-    const amount = Math.min(3 + this.wave, 13);
+    if (this.wave === 3) {
+      this.playCutscene(STORY.sectorThree, () => {
+        this.state = "playing";
+        this.spawnWave();
+      });
+
+      return;
+    }
+
+    this.state = "playing";
+    this.spawnWave();
+  }
+
+  spawnWave() {
+    const amount = Math.min(3 + this.wave, 14);
 
     for (let i = 0; i < amount; i++) {
       this.spawnAsteroid(GAME_CONFIG.asteroid.large);
     }
 
-    this.setMission(`Setor ${this.wave} detectado. ${amount} fragmentos hostis se aproximam.`);
+    this.setMission(`Setor ${this.wave}: campo de fragmentos detectado. Sobreviva e colete núcleos.`);
+    this.updateUI();
   }
 
   spawnAsteroid(radius, x = null, y = null) {
@@ -180,11 +296,14 @@ class NebulaRaidersGame {
     this.lastFrame = timestamp;
 
     this.time += deltaTime;
-
     this.background.update(deltaTime);
 
     if (this.state === "playing") {
-      this.update(deltaTime);
+      this.updateGameplay(deltaTime);
+    }
+
+    if (this.state === "cutscene") {
+      this.updateCutscene(deltaTime);
     }
 
     this.draw();
@@ -192,7 +311,15 @@ class NebulaRaidersGame {
     requestAnimationFrame((newTimestamp) => this.loop(newTimestamp));
   }
 
-  update(deltaTime) {
+  updateCutscene(deltaTime) {
+    this.dialogueTimer += deltaTime;
+
+    if (this.dialogueTimer >= this.dialogueAutoDelay) {
+      this.nextDialogue();
+    }
+  }
+
+  updateGameplay(deltaTime) {
     this.player.update(deltaTime, this.keys, this.width, this.height);
 
     if (this.keys.Space) {
@@ -222,10 +349,66 @@ class NebulaRaidersGame {
     this.particles = this.particles.filter((particle) => !particle.dead);
 
     if (this.asteroids.length === 0 && this.state === "playing") {
-      this.startNextWave();
+      this.completeWave();
     }
 
     this.updateUI();
+  }
+
+  completeWave() {
+    const shouldVisitStation = this.wave % GAME_CONFIG.economy.stationInterval === 0;
+
+    if (shouldVisitStation) {
+      this.openStation();
+      return;
+    }
+
+    this.startNextWave();
+  }
+
+  openStation() {
+    this.state = "station";
+
+    const station = STATIONS[(this.wave / GAME_CONFIG.economy.stationInterval - 1) % STATIONS.length];
+
+    this.elements.stationName.textContent = station.name;
+    this.elements.stationDescription.textContent = station.description;
+
+    this.hideAllScreens();
+
+    this.playCutscene(STORY.station, () => {
+      this.state = "station";
+      this.elements.stationScreen.classList.remove("hidden");
+      this.setMission(`${station.name}: reparos, módulos e descanso antes do próximo setor.`);
+    });
+  }
+
+  repairShip() {
+    if (!this.player) return;
+
+    const repairCost = GAME_CONFIG.economy.repairCost;
+
+    if (this.score < repairCost) {
+      this.setMission(`Créditos insuficientes. Reparo custa ${repairCost}.`);
+      return;
+    }
+
+    if (this.player.hull >= this.player.maxHull) {
+      this.setMission("O casco já está em condição máxima.");
+      return;
+    }
+
+    this.score -= repairCost;
+    this.player.hull = Math.min(this.player.maxHull, this.player.hull + 55);
+
+    this.setMission("Casco reparado. A ASTROTRON voltou a respirar.");
+    this.updateUI();
+  }
+
+  leaveStation() {
+    this.elements.stationScreen.classList.add("hidden");
+    this.setMission("Nyx deixa o posto para trás. O vazio se abre novamente.");
+    this.startNextWave();
   }
 
   handleCollisions() {
@@ -237,7 +420,7 @@ class NebulaRaidersGame {
           bullet.dead = true;
           asteroid.hit(bullet.damage);
 
-          this.createExplosion(bullet.x, bullet.y, "rgba(255, 235, 138, 1)", 0.7, 8);
+          this.createExplosion(bullet.x, bullet.y, "rgba(255, 223, 126, 1)", 0.7, 8);
 
           if (asteroid.dead) {
             this.destroyAsteroid(asteroid);
@@ -254,8 +437,8 @@ class NebulaRaidersGame {
         const tookDamage = this.player.takeDamage(damage);
 
         if (tookDamage) {
-          this.createExplosion(this.player.x, this.player.y, "rgba(255, 85, 119, 1)", 1.2, 20);
-          this.setMission("Impacto crítico! O casco da nave foi danificado.");
+          this.createExplosion(this.player.x, this.player.y, "rgba(255, 75, 95, 1)", 1.2, 20);
+          this.setMission("Impacto direto. O casco da ASTROTRON está comprometido.");
 
           const pushAngle = Math.atan2(this.player.y - asteroid.y, this.player.x - asteroid.x);
           this.player.vx += Math.cos(pushAngle) * 180;
@@ -270,13 +453,13 @@ class NebulaRaidersGame {
   }
 
   destroyAsteroid(asteroid) {
-    const scoreGain = Math.round(asteroid.radius * 12 + this.wave * 10);
-    const xpGain = Math.round(asteroid.radius * 1.35);
+    const scoreGain = Math.round(asteroid.radius * 13 + this.wave * 12);
+    const xpGain = Math.round(asteroid.radius * 1.4);
 
     this.score += scoreGain;
     this.addXp(xpGain);
 
-    this.createExplosion(asteroid.x, asteroid.y, "rgba(87, 232, 255, 1)", 1.1, 22);
+    this.createExplosion(asteroid.x, asteroid.y, "rgba(102, 217, 255, 1)", 1.1, 22);
 
     if (asteroid.radius > GAME_CONFIG.asteroid.minSplitRadius) {
       const newRadius = asteroid.radius > 35
@@ -299,11 +482,11 @@ class NebulaRaidersGame {
       this.xp -= this.xpGoal;
       this.xpGoal = Math.round(this.xpGoal * GAME_CONFIG.progression.xpGrowth);
 
-      this.openUpgradeScreen();
+      this.openUpgradeScreen("levelup");
     }
   }
 
-  openUpgradeScreen() {
+  openUpgradeScreen(origin = "levelup") {
     this.state = "upgrade";
     this.keys.Space = false;
 
@@ -322,26 +505,39 @@ class NebulaRaidersGame {
       `;
 
       card.addEventListener("click", () => {
-        this.applyUpgrade(upgrade.type);
+        this.applyUpgrade(upgrade.type, origin);
       });
 
       this.elements.upgradeCards.appendChild(card);
     });
 
+    this.hideAllScreens();
     this.elements.upgradeScreen.classList.remove("hidden");
-    this.setMission("A nave absorveu energia suficiente para uma evolução.");
+
+    if (origin === "station") {
+      this.setMission("A oficina abre seus braços mecânicos ao redor da ASTROTRON.");
+    } else {
+      this.setMission("Núcleo carregado. A nave exige evolução.");
+    }
+
     this.updateUI();
   }
 
-  applyUpgrade(type) {
+  applyUpgrade(type, origin) {
     const upgrade = UPGRADE_OPTIONS.find((item) => item.type === type);
 
     this.player.applyUpgrade(type);
 
     this.elements.upgradeScreen.classList.add("hidden");
-    this.state = "playing";
 
-    this.setMission(`${upgrade.name} instalado. Continue avançando pelos fragmentos.`);
+    if (origin === "station") {
+      this.state = "station";
+      this.elements.stationScreen.classList.remove("hidden");
+    } else {
+      this.state = "playing";
+    }
+
+    this.setMission(`${upgrade.name} instalado. A ASTROTRON responde diferente agora.`);
     this.updateUI();
   }
 
@@ -354,16 +550,18 @@ class NebulaRaidersGame {
   endGame() {
     this.state = "gameover";
 
-    const currentHighScore = Number(localStorage.getItem("nebulaRaidersHighScore") || 0);
+    const currentHighScore = Number(localStorage.getItem("astrotronHighScore") || 0);
     const newHighScore = Math.max(currentHighScore, this.score);
 
-    localStorage.setItem("nebulaRaidersHighScore", String(newHighScore));
+    localStorage.setItem("astrotronHighScore", String(newHighScore));
 
     this.elements.finalScore.textContent = this.score;
     this.elements.highScore.textContent = newHighScore;
+
+    this.hideAllScreens();
     this.elements.gameOverScreen.classList.remove("hidden");
 
-    this.setMission("Transmissão encerrada. A nave perdeu contato com a base.");
+    this.setMission("Sinal perdido. A ASTROTRON desapareceu entre os fragmentos.");
   }
 
   setMission(text) {
@@ -373,7 +571,7 @@ class NebulaRaidersGame {
   updateUI() {
     this.elements.scoreValue.textContent = Utils.formatScore(this.score);
     this.elements.waveValue.textContent = this.wave || 1;
-    this.elements.levelValue.textContent = this.player ? this.player.level : 1;
+    this.elements.levelValue.textContent = this.player ? `Nível ${this.player.level}` : "Nível 1";
 
     const hullPercent = this.player
       ? Utils.clamp((this.player.hull / this.player.maxHull) * 100, 0, 100)
@@ -389,6 +587,7 @@ class NebulaRaidersGame {
     this.ctx.clearRect(0, 0, this.width, this.height);
 
     this.background.draw(this.ctx);
+    this.drawMachineSilhouette();
 
     for (const bullet of this.bullets) {
       bullet.draw(this.ctx);
@@ -409,18 +608,54 @@ class NebulaRaidersGame {
     this.drawVignette();
   }
 
+  drawMachineSilhouette() {
+    const ctx = this.ctx;
+
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.strokeStyle = "rgba(185, 230, 255, 0.55)";
+    ctx.lineWidth = 1;
+
+    const centerX = this.width * 0.73;
+    const centerY = this.height * 0.36;
+    const size = Math.min(this.width, this.height) * 0.34;
+
+    ctx.translate(centerX, centerY);
+    ctx.rotate(-0.18);
+
+    for (let i = 0; i < 7; i++) {
+      const offset = i * 22;
+
+      ctx.strokeRect(
+        -size / 2 + offset,
+        -size / 2 + offset * 0.3,
+        size - offset * 1.4,
+        size - offset * 0.8
+      );
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.6, 0);
+    ctx.lineTo(size * 0.58, 0);
+    ctx.moveTo(0, -size * 0.6);
+    ctx.lineTo(0, size * 0.58);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
   drawVignette() {
     const gradient = this.ctx.createRadialGradient(
       this.width / 2,
       this.height / 2,
-      this.width * 0.2,
+      this.width * 0.22,
       this.width / 2,
       this.height / 2,
-      this.width * 0.75
+      this.width * 0.78
     );
 
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0.48)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0.58)");
 
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.width, this.height);
@@ -428,5 +663,5 @@ class NebulaRaidersGame {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  new NebulaRaidersGame();
+  new AstrotronGame();
 });
