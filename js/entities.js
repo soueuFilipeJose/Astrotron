@@ -32,6 +32,14 @@ class Player {
       cannon: 0,
       engine: 0
     };
+
+    this.sprite = new Image();
+    this.sprite.src = "assets/img/nave-astrotron-sprite.png";
+    this.spriteLoaded = false;
+
+    this.sprite.addEventListener("load", () => {
+    this.spriteLoaded = true;
+});
   }
 
   update(deltaTime, keys, width, height) {
