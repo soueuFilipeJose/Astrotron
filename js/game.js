@@ -303,7 +303,6 @@ class AstrotronGame {
     }
 
     if (this.state === "cutscene") {
-      this.updateCutscene(deltaTime);
     }
 
     this.draw();
