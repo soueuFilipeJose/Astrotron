@@ -311,11 +311,6 @@ class AstrotronGame {
   }
 
   updateCutscene(deltaTime) {
-    this.dialogueTimer += deltaTime;
-
-    if (this.dialogueTimer >= this.dialogueAutoDelay) {
-      this.nextDialogue();
-    }
   }
 
   updateGameplay(deltaTime) {
