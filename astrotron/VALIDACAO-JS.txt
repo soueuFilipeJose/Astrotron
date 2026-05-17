@@ -1,6 +1,0 @@
-background.js: OK
-config.js: OK
-entities.js: OK
-game.js: OK
-story.js: OK
-utils.js: OK
