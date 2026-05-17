@@ -1,0 +1,12 @@
+ASTROTRON V13
+
+Correção principal:
+- O arquivo js/game.js foi regravado em formato seguro e validado para evitar tela preta.
+- No GitHub atual, o game.js estava com quebras de linha dentro de textos JavaScript, o que pode travar o carregamento.
+
+Ajuste visual:
+- Nome do personagem e setor/capítulo ficam mais próximos do balão de fala.
+
+Importante:
+- Suba a pasta astrotron inteira pelo GitHub.
+- Evite copiar/colar o conteúdo de game.js manualmente em editores online que possam quebrar linhas dentro das aspas.
