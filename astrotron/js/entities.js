@@ -219,6 +219,43 @@ class Player {
     ctx.globalAlpha = 1;
   }
 
+  drawEngineFlame(ctx) {
+    const flameLength = this.radius * Utils.randomRange(1.2, 1.8);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    const gradient = ctx.createLinearGradient(0, this.radius, 0, this.radius + flameLength);
+    gradient.addColorStop(0, "rgba(102, 217, 255, 0.95)");
+    gradient.addColorStop(0.5, "rgba(255, 184, 107, 0.85)");
+    gradient.addColorStop(1, "rgba(255, 75, 95, 0)");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(-this.radius * 0.55, this.radius * 0.8);
+    ctx.lineTo(0, this.radius + flameLength);
+    ctx.lineTo(this.radius * 0.55, this.radius * 0.8);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  drawFallbackShip(ctx) {
+    ctx.strokeStyle = GAME_CONFIG.colors.player;
+    ctx.fillStyle = "rgba(102, 217, 255, 0.12)";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -this.radius * 1.4);
+    ctx.lineTo(this.radius, this.radius);
+    ctx.lineTo(0, this.radius * 0.55);
+    ctx.lineTo(-this.radius, this.radius);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
   drawAttachedParasites(ctx) {
     for (const parasite of this.attachedParasites) {
       ctx.save();
@@ -253,43 +290,6 @@ class Player {
     ctx.fill();
     ctx.restore();
   }
-
-  drawEngineFlame(ctx) {
-    const flameLength = this.radius * Utils.randomRange(1.2, 1.8);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(-this.radius * 0.42, this.radius * 1.8);
-    ctx.lineTo(0, this.radius * 1.8 + flameLength);
-    ctx.lineTo(this.radius * 0.42, this.radius * 1.8);
-    ctx.closePath();
-
-    const flameGradient = ctx.createLinearGradient(0, this.radius * 1.4, 0, this.radius * 3.2);
-    flameGradient.addColorStop(0, "rgba(102, 217, 255, 0.95)");
-    flameGradient.addColorStop(0.45, "rgba(255, 184, 107, 0.75)");
-    flameGradient.addColorStop(1, "rgba(255, 75, 95, 0)");
-
-    ctx.fillStyle = flameGradient;
-    ctx.shadowBlur = 24;
-    ctx.shadowColor = "rgba(102, 217, 255, 0.9)";
-    ctx.fill();
-    ctx.restore();
-  }
-
-  drawFallbackShip(ctx) {
-    ctx.beginPath();
-    ctx.moveTo(0, -this.radius * 1.4);
-    ctx.lineTo(this.radius * 1.1, this.radius * 1.1);
-    ctx.lineTo(0, this.radius * 0.65);
-    ctx.lineTo(-this.radius * 1.1, this.radius * 1.1);
-    ctx.closePath();
-
-    ctx.fillStyle = "#66d9ff";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.lineWidth = 2;
-    ctx.fill();
-    ctx.stroke();
-  }
 }
 
 class Bullet {
@@ -304,22 +304,9 @@ class Bullet {
     this.dead = false;
     this.vx = Math.cos(angle) * speed;
     this.vy = Math.sin(angle) * speed;
-    this.trail = [];
   }
 
   update(deltaTime, width, height) {
-    this.trail.push({ x: this.x, y: this.y, life: 0.16 });
-
-    if (this.trail.length > 7) {
-      this.trail.shift();
-    }
-
-    for (const point of this.trail) {
-      point.life -= deltaTime;
-    }
-
-    this.trail = this.trail.filter((point) => point.life > 0);
-
     this.x += this.vx * deltaTime;
     this.y += this.vy * deltaTime;
     this.life -= deltaTime;
@@ -389,25 +376,22 @@ class Asteroid {
   }
 
   getHealthBySize() {
-    if (this.radius >= 42) {
-      return 3;
-    }
-
-    if (this.radius >= 25) {
-      return 2;
-    }
-
+    if (this.radius > 45) return 4;
+    if (this.radius > 28) return 2;
     return 1;
   }
 
   createVertices() {
-    const amount = Utils.randomInt(9, 14);
+    const total = Utils.randomInt(9, 16);
     const vertices = [];
 
-    for (let i = 0; i < amount; i += 1) {
+    for (let i = 0; i < total; i += 1) {
+      const angle = (Math.PI * 2 * i) / total;
+      const variance = Utils.randomRange(0.72, 1.28);
+
       vertices.push({
-        angle: (i / amount) * Math.PI * 2,
-        distance: this.radius * Utils.randomRange(0.72, 1.18)
+        x: Math.cos(angle) * this.radius * variance,
+        y: Math.sin(angle) * this.radius * variance
       });
     }
 
@@ -439,40 +423,34 @@ class Asteroid {
     ctx.rotate(this.angle);
 
     if (this.sprite.loaded) {
-      const size = this.radius * this.spriteScale;
-
-      ctx.shadowBlur = 18;
-      ctx.shadowColor = "rgba(255, 75, 95, 0.22)";
+      const size = this.radius * this.spriteScale * 2;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = "rgba(185, 230, 255, 0.12)";
+      ctx.filter = "brightness(88%) contrast(108%)";
       ctx.drawImage(this.sprite, -size / 2, -size / 2, size, size);
+      ctx.filter = "none";
       ctx.shadowBlur = 0;
     } else {
-      this.drawFallback(ctx);
+      ctx.strokeStyle = GAME_CONFIG.colors.asteroid;
+      ctx.fillStyle = "rgba(185, 230, 255, 0.07)";
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+
+      this.vertices.forEach((point, index) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
     }
 
     ctx.restore();
-  }
-
-  drawFallback(ctx) {
-    ctx.beginPath();
-
-    for (let i = 0; i < this.vertices.length; i += 1) {
-      const point = this.vertices[i];
-      const x = Math.cos(point.angle) * point.distance;
-      const y = Math.sin(point.angle) * point.distance;
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-
-    ctx.closePath();
-    ctx.fillStyle = "rgba(217, 227, 255, 0.09)";
-    ctx.strokeStyle = "rgba(217, 227, 255, 0.82)";
-    ctx.lineWidth = 2;
-    ctx.fill();
-    ctx.stroke();
   }
 }
 
@@ -712,7 +690,6 @@ class CentipedeCreature {
   }
 }
 
-
 class EnemyBullet {
   constructor(x, y, angle) {
     const config = GAME_CONFIG.enemyShip;
@@ -725,25 +702,11 @@ class EnemyBullet {
     this.damage = config.bulletDamage;
     this.life = config.bulletLifetime;
     this.dead = false;
-    this.trail = [];
-
     this.vx = Math.cos(angle) * this.speed;
     this.vy = Math.sin(angle) * this.speed;
   }
 
   update(deltaTime, width, height) {
-    this.trail.push({ x: this.x, y: this.y, life: 0.26 });
-
-    if (this.trail.length > 9) {
-      this.trail.shift();
-    }
-
-    for (const point of this.trail) {
-      point.life -= deltaTime;
-    }
-
-    this.trail = this.trail.filter((point) => point.life > 0);
-
     this.x += this.vx * deltaTime;
     this.y += this.vy * deltaTime;
     this.life -= deltaTime;
@@ -894,8 +857,6 @@ class EnemyShip {
   }
 }
 
-
-
 class LaserSweep {
   constructor(width, height, index = 0) {
     this.width = width;
@@ -913,7 +874,9 @@ class LaserSweep {
     this.height = height;
     this.timer += deltaTime;
 
-    const cycle = GAME_CONFIG.phaseThree.laserChargeTime + GAME_CONFIG.phaseThree.laserFireTime + GAME_CONFIG.phaseThree.laserCooldown;
+    const cycle = GAME_CONFIG.phaseThree.laserChargeTime +
+      GAME_CONFIG.phaseThree.laserFireTime +
+      GAME_CONFIG.phaseThree.laserCooldown;
 
     if (this.timer >= cycle) {
       this.timer = 0;
@@ -1013,13 +976,26 @@ class TurretBullet {
   }
 
   draw(ctx) {
+    const tailX = this.x - Math.cos(this.angle) * 30;
+    const tailY = this.y - Math.sin(this.angle) * 30;
+
     ctx.save();
-    ctx.beginPath();
-    ctx.fillStyle = "rgba(255, 72, 86, 1)";
-    ctx.shadowBlur = 18;
+    ctx.lineCap = "round";
+    ctx.shadowBlur = 14;
     ctx.shadowColor = "rgba(255, 72, 86, 1)";
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
+
+    const gradient = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
+    gradient.addColorStop(0, "rgba(255, 72, 86, 0)");
+    gradient.addColorStop(0.55, "rgba(255, 72, 86, 0.6)");
+    gradient.addColorStop(1, "rgba(255, 230, 230, 1)");
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(tailX, tailY);
+    ctx.lineTo(this.x, this.y);
+    ctx.stroke();
+
     ctx.restore();
   }
 }
@@ -1085,6 +1061,7 @@ class OrbitalTurret {
     ctx.shadowBlur = 18;
     ctx.shadowColor = "rgba(255, 55, 70, 0.9)";
     ctx.fillRect(0, -4, this.radius * 1.35, 8);
+
     ctx.beginPath();
     ctx.arc(0, 0, 7, 0, Math.PI * 2);
     ctx.fill();
@@ -1093,40 +1070,45 @@ class OrbitalTurret {
   }
 }
 
-
 class Particle {
   constructor(x, y, color, power = 1) {
     const angle = Utils.randomRange(0, Math.PI * 2);
-    const speed = Utils.randomRange(40, 190) * power;
+    const speed = Utils.randomRange(45, 260) * power;
 
     this.x = x;
     this.y = y;
-    this.radius = Utils.randomRange(1.4, 3.8) * power;
+    this.radius = Utils.randomRange(1.2, 4.2) * power;
     this.vx = Math.cos(angle) * speed;
     this.vy = Math.sin(angle) * speed;
-    this.life = Utils.randomRange(0.25, 0.75);
+    this.life = Utils.randomRange(0.35, 0.85);
     this.maxLife = this.life;
     this.color = color;
+    this.dead = false;
   }
 
   update(deltaTime) {
     this.x += this.vx * deltaTime;
     this.y += this.vy * deltaTime;
-    this.life -= deltaTime;
     this.vx *= 0.985;
     this.vy *= 0.985;
+    this.life -= deltaTime;
+
+    if (this.life <= 0) {
+      this.dead = true;
+    }
   }
 
   draw(ctx) {
-    const alpha = Math.max(this.life / this.maxLife, 0);
+    const alpha = Utils.clamp(this.life / this.maxLife, 0, 1);
 
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = this.color;
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = this.color;
     ctx.beginPath();
-    ctx.fillStyle = this.color.replace("1)", `${alpha})`);
     ctx.arc(this.x, this.y, this.radius * alpha, 0, Math.PI * 2);
     ctx.fill();
-  }
-
-  get dead() {
-    return this.life <= 0;
+    ctx.restore();
   }
 }
