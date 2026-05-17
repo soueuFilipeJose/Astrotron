@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>ASTROTRON | Fragmentos da Máquina</title>
+
+  <link rel="stylesheet" href="css/estilobackground.css" />
+  <link rel="stylesheet" href="css/estilogeral.css" />
+</head>
+
+<body>
+  <div class="astro-background">
+    <div class="mega-structure structure-one"></div>
+    <div class="mega-structure structure-two"></div>
+    <div class="dust-layer"></div>
+    <div class="noise-layer"></div>
+  </div>
+
+  <main class="game-shell">
+    <section class="top-panel">
+      <div class="brand-card">
+        <p class="eyebrow">Operação de Patrulha Profunda</p>
+        <h1>ASTROTRON</h1>
+        <p class="subtitle">Fragmentos da Máquina</p>
+      </div>
+
+      <div class="hud cockpit-hud">
+        <div class="hud-card compact">
+          <span>Créditos</span>
+          <strong id="scoreValue">00000</strong>
+        </div>
+
+        <div class="hud-card compact">
+          <span>Setor</span>
+          <strong id="waveValue">1</strong>
+        </div>
+
+        <div class="hud-card systems-card">
+          <span>Sistemas vitais</span>
+
+          <div class="stacked-bars">
+            <label>
+              <em>Nível do casco</em>
+              <div class="bar hull"><i id="hullBar"></i></div>
+            </label>
+
+            <label>
+              <em>Energia</em>
+              <div class="bar energy"><i id="xpBar"></i></div>
+            </label>
+
+            <label>
+              <em>Oxigênio</em>
+              <div class="bar oxygen"><i id="oxygenBar"></i></div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mission-panel">
+      <span class="status-dot"></span>
+      <p id="missionText">Sistema em modo repouso.</p>
+    </section>
+
+    <section class="canvas-card">
+      <canvas id="gameCanvas"></canvas>
+
+      <div id="startScreen" class="screen-overlay">
+        <div class="title-screen">
+          <div class="hero-profile">
+            <div class="portrait-frame has-portrait-image title-nyx-frame">
+              <img
+                class="title-nyx-image"
+                src="assets/img/personagens/nyx_retrato_policial.png"
+                alt="Retrato de Nyx Varela"
+                onerror="this.style.display='none';"
+              />
+              <div class="portrait-head"></div>
+              <div class="portrait-hair"></div>
+              <div class="portrait-body"></div>
+              <div class="portrait-glow"></div>
+            </div>
+
+            <div class="profile-text">
+              <p class="eyebrow">Piloto em custódia</p>
+              <h2>BLUENYX</h2>
+              <p>Ex-mercenária intergaláctica, apelidada Nyx, agora piloto forçada do protótipo policial ASTROTRON.</p>
+            </div>
+          </div>
+
+          <div class="title-content">
+            <p class="eyebrow">Ano 2294</p>
+            <h2>A máquina acordou entre as estrelas</h2>
+
+            <p>Nas bordas do Sistema Orfeu existe uma estrutura impossível: uma cidade orbital abandonada, tão grande que atravessa luas, planetas mortos e cinturões de asteroides.</p>
+
+            <p>Quando seus fragmentos começaram a cair sobre as rotas humanas, Nyx Varela foi enviada para investigar. Mas a missão não é apenas sobreviver. É descobrir por que a Máquina está chamando por ela.</p>
+
+            <button id="startBtn" class="primary-btn">Iniciar transmissão</button>
+
+            <div class="controls-hint">
+              <span>W / ↑ acelerar</span>
+              <span>A / D girar</span>
+              <span>S / ↓ frear</span>
+              <span>Espaço atirar</span>
+              <span>R reiniciar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cutsceneScreen" class="screen-overlay hidden">
+        <div class="cutscene-box">
+          <div class="cutscene-visual">
+            <div class="cutscene-portrait">
+              <div class="portrait-frame small has-portrait-image cutscene-nyx-frame">
+                <img
+                  class="cutscene-nyx-image"
+                  src="assets/img/personagens/nyx_retrato_policial.png"
+                  alt="Retrato de Nyx Varela"
+                  onerror="this.style.display='none';"
+                />
+                <div class="portrait-head"></div>
+                <div class="portrait-hair"></div>
+                <div class="portrait-body"></div>
+                <div class="portrait-glow"></div>
+              </div>
+            </div>
+
+            <div class="cutscene-location">
+              <span id="cutsceneChapter">Capítulo 01</span>
+              <strong id="cutscenePlace">Cinturão Orfeu</strong>
+            </div>
+          </div>
+
+          <div class="dialogue-box">
+            <span id="speakerName">Nyx Varela</span>
+            <p id="dialogueText"></p>
+
+            <div class="dialogue-actions">
+              <button id="skipCutsceneBtn" class="ghost-btn">Pular</button>
+              <button id="nextDialogueBtn" class="primary-btn small-btn">Continuar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="sectorLoadScreen" class="screen-overlay sector-load-screen hidden">
+        <div class="sector-load-box">
+          <span class="load-kicker">Sincronizando setor</span>
+          <strong id="sectorLoadText">Carregando mapa, meteoros e telemetria...</strong>
+          <div class="load-line"><i></i></div>
+        </div>
+      </div>
+
+      <div id="stationScreen" class="screen-overlay hidden">
+        <div class="station-box">
+          <p class="eyebrow">Parada orbital</p>
+          <h2 id="stationName">Posto Estelar</h2>
+          <p id="stationDescription">Um abrigo improvisado preso a uma lua partida.</p>
+
+          <div class="station-grid">
+            <button id="repairBtn" class="station-card">
+              <span>✚</span>
+              <h3>Reparar casco</h3>
+              <p>Gaste créditos para recuperar a integridade da nave.</p>
+            </button>
+
+            <button id="stationUpgradeBtn" class="station-card">
+              <span>⬡</span>
+              <h3>Oficina de upgrade</h3>
+              <p>Instale módulos experimentais na ASTROTRON.</p>
+            </button>
+
+            <button id="continueMissionBtn" class="station-card">
+              <span>➜</span>
+              <h3>Continuar rota</h3>
+              <p>Retorne ao vazio e atravesse o próximo setor.</p>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="upgradeScreen" class="screen-overlay hidden">
+        <div class="screen-box upgrade-box">
+          <p class="eyebrow">Oficina da ASTROTRON</p>
+          <h2>Escolha uma melhoria</h2>
+          <p>Cada módulo consome créditos e muda a forma como a nave responde no campo de fragmentos.</p>
+
+          <div id="upgradeCards" class="upgrade-grid"></div>
+        </div>
+      </div>
+
+      <div id="gameOverScreen" class="screen-overlay hidden">
+        <div class="screen-box">
+          <p class="eyebrow danger">Transmissão perdida</p>
+          <h2>Nyx desapareceu no vazio</h2>
+
+          <p>A última imagem enviada pela ASTROTRON mostra a Máquina se abrindo como uma cidade viva entre os destroços.</p>
+
+          <div class="result-box">
+            <span>Créditos finais</span>
+            <strong id="finalScore">0</strong>
+          </div>
+
+          <div class="result-box">
+            <span>Recorde local</span>
+            <strong id="highScore">0</strong>
+          </div>
+
+          <button id="restartBtn" class="primary-btn">Reiniciar missão</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bottom-panel">
+      <p>ASTROTRON — Protótipo narrativo com combate espacial, setores, estações, upgrades e inimigos biomecânicos.</p>
+    </footer>
+  </main>
+
+  <script src="js/config.js" defer></script>
+  <script src="js/utils.js" defer></script>
+  <script src="js/background.js" defer></script>
+  <script src="js/story.js" defer></script>
+  <script src="js/entities.js" defer></script>
+  <script src="js/game.js" defer></script>
+</body>
+</html>
