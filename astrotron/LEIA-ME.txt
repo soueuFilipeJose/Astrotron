@@ -1,0 +1,11 @@
+Estrutura padronizada do projeto Astrotron.
+
+Use esta pasta inteira no GitHub:
+
+astrotron/
+  index.html
+  assets/
+  css/
+  js/
+
+Este pacote já inclui as imagens implementadas da IA e do mecânico.
